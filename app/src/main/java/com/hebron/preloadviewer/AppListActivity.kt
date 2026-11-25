@@ -27,6 +27,11 @@ class AppListActivity : AppCompatActivity() {
 
         val pm = packageManager
         val packages = pm.getInstalledApplications(0)
+            // Only user-installed apps — system apps aren't interesting here
+            // and would otherwise flood the list with hundreds of entries.
+            // An app that was updated (e.g. a system app replaced by a
+            // Play Store update) still counts as "system" here on purpose.
+            .filter { (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0 }
             .sortedBy { it.loadLabel(pm).toString().lowercase() }
 
         headerCount.text = "${packages.size} אפליקציות"

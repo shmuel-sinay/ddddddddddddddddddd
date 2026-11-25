@@ -2,5 +2,11 @@
     <style name="Theme.HebronPreloadViewer" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/header_blue</item>
         <item name="android:windowBackground">@color/screen_bg</item>
+        <!-- The original (plain Activity, no theme) leaves the status bar at
+             the system's own neutral color. Without this, MaterialComponents'
+             baseline colorPrimaryVariant (a dark purple) leaks into the status
+             bar instead, which is the "everything looks off" mismatch. -->
+        <item name="colorPrimaryVariant">@color/status_bar_neutral</item>
+        <item name="android:statusBarColor">@color/status_bar_neutral</item>
     </style>
 </resources>
