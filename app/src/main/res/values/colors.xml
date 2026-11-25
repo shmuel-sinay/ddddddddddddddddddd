@@ -7,4 +7,8 @@
     <color name="name_text">#212121</color>
     <color name="protected_text">#F57F17</color>
     <color name="empty_text">#9E9E9E</color>
+
+    <!-- Launcher icon only — deliberately distinct from the MDM app's blue identity -->
+    <color name="launcher_bg">#2B2118</color>
+    <color name="launcher_fg">#D9A441</color>
 </resources>
