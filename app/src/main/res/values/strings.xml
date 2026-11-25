@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">חברון התקנות - צפייה</string>
+    <string name="header_title">חברון התקנות</string>
+    <string name="status_protected">מוגן</string>
+    <string name="empty_state">לא נמצאו אפליקציות בתיקייה</string>
+    <string name="permission_denied">אין הרשאת קריאה לתיקייה הזו במכשיר הזה</string>
+</resources>

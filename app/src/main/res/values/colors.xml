@@ -1,0 +1,10 @@
+<resources>
+    <color name="header_blue">#1565C0</color>
+    <color name="header_blue_sub">#BBDEFB</color>
+    <color name="screen_bg">#F5F5F5</color>
+    <color name="row_bg">#FFFFFFFF</color>
+    <color name="row_divider">#E0E0E0</color>
+    <color name="name_text">#212121</color>
+    <color name="protected_text">#F57F17</color>
+    <color name="empty_text">#9E9E9E</color>
+</resources>
