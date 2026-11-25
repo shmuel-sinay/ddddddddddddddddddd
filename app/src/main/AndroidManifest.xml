@@ -16,6 +16,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Hidden screens: reached only via long-press from MainActivity,
+             never shown in the launcher and not reachable from other apps. -->
+        <activity android:name=".AppListActivity" android:exported="false" />
+        <activity android:name=".ActivityListActivity" android:exported="false" />
     </application>
 
 </manifest>

@@ -33,9 +33,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val headerTitle = findViewById<TextView>(R.id.headerTitle)
         val headerCount = findViewById<TextView>(R.id.headerCount)
         val permissionBanner = findViewById<TextView>(R.id.permissionBanner)
         val listContainer = findViewById<LinearLayout>(R.id.listContainer)
+
+        // Hidden entry point to the activity launcher — intentionally not a
+        // visible button. Long-press the header title to open it.
+        headerTitle.setOnLongClickListener {
+            startActivity(android.content.Intent(this, AppListActivity::class.java))
+            true
+        }
 
         val (folder, usedFallback) = resolveReadableFolder()
         permissionBanner.visibility = if (usedFallback) View.VISIBLE else View.GONE
