@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             val empty = TextView(this).apply {
                 text = getString(R.string.empty_state)
                 setTextColor(resources.getColor(R.color.empty_text, theme))
-                textSize = 14f
+                textSize = 15f
                 gravity = android.view.Gravity.CENTER
                 setPadding(32, 120, 32, 120)
             }

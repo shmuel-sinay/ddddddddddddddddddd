@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/name_text"
             android:textStyle="bold"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:singleLine="true"
             android:ellipsize="end" />
 
@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#999999"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:singleLine="true" />
     </LinearLayout>
 
@@ -47,7 +47,7 @@
         android:layout_height="wrap_content"
         android:text="@string/status_protected"
         android:textColor="@color/protected_text"
-        android:textSize="12sp"
+        android:textSize="11sp"
         android:paddingHorizontal="6dp"
         android:paddingVertical="2dp" />
 

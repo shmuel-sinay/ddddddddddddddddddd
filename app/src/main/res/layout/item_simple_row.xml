@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/name_text"
             android:textStyle="bold"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:singleLine="true"
             android:ellipsize="end" />
 
