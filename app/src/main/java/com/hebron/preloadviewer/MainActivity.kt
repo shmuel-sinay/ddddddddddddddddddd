@@ -5,9 +5,11 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import java.io.File
 
@@ -43,6 +45,12 @@ class MainActivity : AppCompatActivity() {
         headerTitle.setOnLongClickListener {
             startActivity(android.content.Intent(this, AppListActivity::class.java))
             true
+        }
+
+        // Shown for visual parity with the original screen only — this build
+        // stays view-only by design, so this button does not install anything.
+        findViewById<Button>(R.id.installAllButton).setOnClickListener {
+            Toast.makeText(this, "תצוגה בלבד בגרסה הזו — אין פעולת התקנה", Toast.LENGTH_SHORT).show()
         }
 
         val (folder, usedFallback) = resolveReadableFolder()
