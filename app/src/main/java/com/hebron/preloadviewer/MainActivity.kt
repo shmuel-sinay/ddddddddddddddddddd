@@ -48,8 +48,12 @@ class MainActivity : AppCompatActivity() {
         val (folder, usedFallback) = resolveReadableFolder()
         permissionBanner.visibility = if (usedFallback) View.VISIBLE else View.GONE
 
+        // No sorting on purpose: the original PreloadManagerActivity uses
+        // File.listFiles() as-is with no comparator, so its row order is
+        // whatever order the filesystem returns — we match that exactly
+        // instead of imposing our own (e.g. alphabetical) order.
         val apks = folder.listFiles { f -> f.isFile && f.name.lowercase().endsWith(".apk") }
-            ?.sortedBy { it.name }
+            ?.toList()
             ?: emptyList()
 
         headerCount.text = getString(R.string.header_title).let {
