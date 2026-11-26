@@ -23,7 +23,10 @@ class BlockAppsService : AccessibilityService() {
     // Whole phrases only: findAccessibilityNodeInfosByText matches substrings.
     private val uninstallTexts = listOf(
         "הסרת התקנה", "הסר את התקנת", "הסרת עדכונים", "הסרת האפליקציה",
-        "uninstall", "uninstall updates"
+        "uninstall", "uninstall updates",
+        // Settings opens every sub-page inside the generic "SubSettings" screen, so the
+        // app-info page is also recognised by its other buttons.
+        "אילוץ עצירה", "עצירה בכוח", "force stop"
     )
 
     private val titles = setOf(
