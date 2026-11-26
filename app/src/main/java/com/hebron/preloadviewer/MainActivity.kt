@@ -27,6 +27,11 @@ import java.io.File
  */
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        // The system file manager (shown as "מנהל הקבצים").
+        const val FILE_MANAGER_PACKAGE = "com.fig.filemanager"
+    }
+
     private class Entry(val file: File, val info: PackageInfo?)
 
     // Primary target. On a normal (non-system, non-rooted) install this will
@@ -107,26 +112,18 @@ class MainActivity : AppCompatActivity() {
             setPadding((16 * dp).toInt(), ((if (extraTop) 24 else 16) * dp).toInt(), (16 * dp).toInt(), (8 * dp).toInt())
         })
 
-        // Look for an installed file manager (system or not).
-        val found = pm.getInstalledApplications(0).firstOrNull {
-            val pkg = it.packageName.lowercase()
-            val label = it.loadLabel(pm).toString().lowercase()
-            pkg.contains("filemanager") || pkg.contains("fileexplorer") ||
-                pkg.contains("documentsui") || pkg.endsWith(".files") ||
-                label.contains("קבצים") || label.contains("file manager")
-        }
+        val found = try { pm.getApplicationInfo(FILE_MANAGER_PACKAGE, 0) } catch (e: Exception) { null }
 
         val row = LayoutInflater.from(this).inflate(R.layout.item_app_row, container, false)
         row.findViewById<TextView>(R.id.appName).text = found?.loadLabel(pm) ?: "מנהל הקבצים"
-        row.findViewById<TextView>(R.id.appInstalled).visibility = View.VISIBLE
+        row.findViewById<TextView>(R.id.appInstalled).visibility = if (found != null) View.VISIBLE else View.GONE
         if (found != null) {
             row.findViewById<ImageView>(R.id.appIcon).setImageDrawable(found.loadIcon(pm))
             val ver = try { pm.getPackageInfo(found.packageName, 0).versionName } catch (e: Exception) { null }
             row.findViewById<TextView>(R.id.appVersion).text = if (ver.isNullOrEmpty()) "" else "v$ver"
         }
         row.setOnClickListener {
-            val launch = found?.let { pm.getLaunchIntentForPackage(it.packageName) }
-                ?: pm.getLaunchIntentForPackage("com.android.documentsui")
+            val launch = pm.getLaunchIntentForPackage(FILE_MANAGER_PACKAGE)
             if (launch != null) {
                 try { startActivity(launch) } catch (e: Exception) {
                     Toast.makeText(this, "שגיאה בהפעלה: ${e.message}", Toast.LENGTH_LONG).show()
@@ -228,22 +225,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun isFileManager(entry: Entry, pm: PackageManager): Boolean {
-        val pkg = entry.info?.packageName?.lowercase() ?: ""
-        val appInfo = entry.info?.applicationInfo
-        val label = try {
-            appInfo?.also {
-                it.sourceDir = entry.file.absolutePath
-                it.publicSourceDir = entry.file.absolutePath
-            }?.loadLabel(pm)?.toString()
-        } catch (e: Exception) {
-            null
-        } ?: entry.file.nameWithoutExtension
-        val l = label.lowercase()
-        return pkg.contains("filemanager") || pkg.contains("fileexplorer") ||
-            pkg.contains("documentsui") || pkg.endsWith(".files") ||
-            l.contains("קבצים") || l.contains("file manager")
-    }
+    private fun isFileManager(entry: Entry, pm: PackageManager): Boolean =
+        entry.info?.packageName == FILE_MANAGER_PACKAGE
 
     /** Tries /system/preload first; falls back to an app-private folder if it can't be read. */
     private fun resolveReadableFolder(): Pair<File, Boolean> {

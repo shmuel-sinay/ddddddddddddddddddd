@@ -12,7 +12,7 @@
         android:gravity="center_vertical"
         android:background="@color/header_blue"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="22dp">
+        android:paddingVertical="14dp">
 
         <TextView
             android:id="@+id/headerTitle"
@@ -22,7 +22,8 @@
             android:text="@string/header_title"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
-            android:textSize="20sp" />
+            android:textSize="18sp"
+            android:singleLine="true" />
 
         <ImageView
             android:id="@+id/refreshButton"
@@ -40,7 +41,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/header_blue_sub"
-            android:textSize="13sp" />
+            android:textSize="12sp"
+            android:singleLine="true" />
     </LinearLayout>
 
     <TextView
