@@ -40,8 +40,42 @@ class BlockAppsService : AccessibilityService() {
         }
     }
 
+    // Cached so no event ever triggers a preferences read or a PackageManager query.
+    @Volatile private var redirect: Set<String> = emptySet()
+    private var lastScan = 0L
+
+    private val prefsListener =
+        android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ -> refreshConfig() }
+
+    /** Packages that handle the system "uninstall app" screen on this device. */
+    private fun installerPackages(): Set<String> {
+        val found = try {
+            packageManager.queryIntentActivities(
+                Intent(Intent.ACTION_DELETE, android.net.Uri.parse("package:com.example.none")), 0
+            ).map { it.activityInfo.packageName }
+        } catch (e: Exception) {
+            emptyList()
+        }
+        return found.toSet() + setOf("com.android.packageinstaller", "com.google.android.packageinstaller")
+    }
+
+    /**
+     * Only events from the few packages we actually care about are delivered
+     * to this service at all (Settings, the uninstall screen, and the apps
+     * chosen for redirect). Every other app costs nothing.
+     */
+    private fun refreshConfig() {
+        redirect = Blocks.redirectPackages(this)
+        val info = serviceInfo ?: return
+        info.packageNames = (setOf("com.android.settings") + installerPackages() + redirect).toTypedArray()
+        serviceInfo = info
+    }
+
     override fun onServiceConnected() {
         super.onServiceConnected()
+        refreshConfig()
+        getSharedPreferences("blocks", android.content.Context.MODE_PRIVATE)
+            .registerOnSharedPreferenceChangeListener(prefsListener)
         registerReceiver(
             packageAdded,
             android.content.IntentFilter(Intent.ACTION_PACKAGE_ADDED).apply { addDataScheme("package") }
@@ -50,6 +84,8 @@ class BlockAppsService : AccessibilityService() {
     }
 
     override fun onDestroy() {
+        getSharedPreferences("blocks", android.content.Context.MODE_PRIVATE)
+            .unregisterOnSharedPreferenceChangeListener(prefsListener)
         try { unregisterReceiver(packageAdded) } catch (_: Exception) { }
         super.onDestroy()
     }
@@ -60,15 +96,19 @@ class BlockAppsService : AccessibilityService() {
 
         // Content changes are only used to spot an uninstall option inside Settings.
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            if (pkg == "com.android.settings" && Blocks.appsControl(this) && showsUninstall()) {
-                openSettingsMain()
+            if (pkg == "com.android.settings" && Blocks.appsControl(this)) {
+                val now = android.os.SystemClock.uptimeMillis()
+                if (now - lastScan >= 500) {
+                    lastScan = now
+                    if (showsUninstall()) openSettingsMain()
+                }
             }
             return
         }
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
 
         // 1) Chosen apps (e.g. the alarm clock): show this app's main screen instead.
-        if (pkg != packageName && pkg in Blocks.redirectPackages(this)) {
+        if (pkg != packageName && pkg in redirect) {
             openMainScreen()
             return
         }
