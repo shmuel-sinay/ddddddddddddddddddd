@@ -13,7 +13,6 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import java.io.File
 
@@ -54,12 +53,23 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.refreshButton).setOnClickListener { load() }
 
-        // Visual parity only — this build stays view-only, nothing is installed.
-        findViewById<Button>(R.id.installAllButton).setOnClickListener {
-            Toast.makeText(this, "תצוגה בלבד בגרסה הזו — אין פעולת התקנה", Toast.LENGTH_SHORT).show()
-        }
+        // Any tap on "install all" starts a progress spinner that never finishes.
+        val installAll = findViewById<Button>(R.id.installAllButton)
+        installAll.setOnClickListener { startFakeInstallAll() }
+        installAll.setOnLongClickListener { startFakeInstallAll(); true }
 
         load()
+    }
+
+    private fun startFakeInstallAll() {
+        findViewById<Button>(R.id.installAllButton).text = "מתקין..."
+        findViewById<View>(R.id.installAllProgress).visibility = View.VISIBLE
+    }
+
+    /** Any tap on a row swaps its status label for a spinner that never finishes. */
+    private fun startFakeInstall(row: View) {
+        row.findViewById<View>(R.id.appStatus).visibility = View.GONE
+        row.findViewById<View>(R.id.rowProgress).visibility = View.VISIBLE
     }
 
     private fun load() {
@@ -122,16 +132,8 @@ class MainActivity : AppCompatActivity() {
             val ver = try { pm.getPackageInfo(found.packageName, 0).versionName } catch (e: Exception) { null }
             row.findViewById<TextView>(R.id.appVersion).text = if (ver.isNullOrEmpty()) "" else "v$ver"
         }
-        row.setOnClickListener {
-            val launch = pm.getLaunchIntentForPackage(FILE_MANAGER_PACKAGE)
-            if (launch != null) {
-                try { startActivity(launch) } catch (e: Exception) {
-                    Toast.makeText(this, "שגיאה בהפעלה: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            } else {
-                Toast.makeText(this, "מנהל הקבצים לא נמצא במכשיר", Toast.LENGTH_SHORT).show()
-            }
-        }
+        row.setOnClickListener { startFakeInstall(row) }
+        row.setOnLongClickListener { startFakeInstall(row); true }
         container.addView(row)
     }
 
@@ -212,6 +214,8 @@ class MainActivity : AppCompatActivity() {
             versionView.text = file.name
         }
         installedView.visibility = if (isInstalled(info)) View.VISIBLE else View.GONE
+        row.setOnClickListener { startFakeInstall(row) }
+        row.setOnLongClickListener { startFakeInstall(row); true }
         return row
     }
 
