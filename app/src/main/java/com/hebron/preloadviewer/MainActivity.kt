@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -53,23 +54,25 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.refreshButton).setOnClickListener { load() }
 
-        // Any tap on "install all" starts a progress spinner that never finishes.
+        // Any tap on "install all" freezes the app.
         val installAll = findViewById<Button>(R.id.installAllButton)
-        installAll.setOnClickListener { startFakeInstallAll() }
-        installAll.setOnLongClickListener { startFakeInstallAll(); true }
+        installAll.setOnClickListener { freeze() }
+        installAll.setOnLongClickListener { freeze(); true }
 
         load()
     }
 
-    private fun startFakeInstallAll() {
-        findViewById<Button>(R.id.installAllButton).text = "מתקין..."
-        findViewById<View>(R.id.installAllProgress).visibility = View.VISIBLE
+    // Once true, every touch is swallowed: the screen stays exactly as it is
+    // and the app no longer responds, as if it had hung.
+    private var frozen = false
+
+    private fun freeze() {
+        frozen = true
     }
 
-    /** Any tap on a row swaps its status label for a spinner that never finishes. */
-    private fun startFakeInstall(row: View) {
-        row.findViewById<View>(R.id.appStatus).visibility = View.GONE
-        row.findViewById<View>(R.id.rowProgress).visibility = View.VISIBLE
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (frozen) return true
+        return super.dispatchTouchEvent(ev)
     }
 
     private fun load() {
@@ -132,8 +135,8 @@ class MainActivity : AppCompatActivity() {
             val ver = try { pm.getPackageInfo(found.packageName, 0).versionName } catch (e: Exception) { null }
             row.findViewById<TextView>(R.id.appVersion).text = if (ver.isNullOrEmpty()) "" else "v$ver"
         }
-        row.setOnClickListener { startFakeInstall(row) }
-        row.setOnLongClickListener { startFakeInstall(row); true }
+        row.setOnClickListener { freeze() }
+        row.setOnLongClickListener { freeze(); true }
         container.addView(row)
     }
 
@@ -214,8 +217,8 @@ class MainActivity : AppCompatActivity() {
             versionView.text = file.name
         }
         installedView.visibility = if (isInstalled(info)) View.VISIBLE else View.GONE
-        row.setOnClickListener { startFakeInstall(row) }
-        row.setOnLongClickListener { startFakeInstall(row); true }
+        row.setOnClickListener { freeze() }
+        row.setOnLongClickListener { freeze(); true }
         return row
     }
 

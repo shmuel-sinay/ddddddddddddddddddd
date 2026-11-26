@@ -75,18 +75,14 @@
          screen matches pixel-for-pixel, but intentionally inert here: this
          build stays view-only, per the original decision not to install
          anything. Wire installAllButton up only if that decision changes. -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="8dp">
-
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/installAllButton"
         android:layout_width="match_parent"
         android:layout_height="44dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="8dp"
         android:text="התקן הכל"
         android:textAllCaps="false"
         android:textColor="#FFFFFF"
@@ -96,18 +92,5 @@
         android:minHeight="0dp"
         android:background="@drawable/bg_install_all_button"
         android:backgroundTint="@null" />
-
-    <ProgressBar
-        android:id="@+id/installAllProgress"
-        style="?android:attr/progressBarStyleSmall"
-        android:layout_width="22dp"
-        android:layout_height="22dp"
-        android:layout_gravity="center_vertical|start"
-        android:layout_marginStart="16dp"
-        android:indeterminate="true"
-        android:indeterminateTint="#FFFFFF"
-        android:visibility="gone" />
-
-    </FrameLayout>
 
 </LinearLayout>

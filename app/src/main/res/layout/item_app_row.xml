@@ -5,9 +5,6 @@
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:background="@color/row_bg"
-    android:foreground="?attr/selectableItemBackground"
-    android:clickable="true"
-    android:focusable="true"
     android:paddingHorizontal="10dp"
     android:paddingVertical="8dp">
 
@@ -70,15 +67,5 @@
         android:textSize="11sp"
         android:paddingHorizontal="6dp"
         android:paddingVertical="2dp" />
-
-    <!-- Shown instead of the status label after any tap; spins forever. -->
-    <ProgressBar
-        android:id="@+id/rowProgress"
-        style="?android:attr/progressBarStyleSmall"
-        android:layout_width="22dp"
-        android:layout_height="22dp"
-        android:layout_marginHorizontal="6dp"
-        android:indeterminate="true"
-        android:visibility="gone" />
 
 </LinearLayout>
