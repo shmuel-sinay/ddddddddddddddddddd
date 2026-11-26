@@ -34,19 +34,29 @@ class BlockAppsService : AccessibilityService() {
 
         // 1) Chosen apps (e.g. the alarm clock): show this app's main screen instead.
         if (pkg != packageName && pkg in Blocks.redirectPackages(this)) {
-            startActivity(
-                Intent(this, MainActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            )
+            openMainScreen()
             return
         }
 
-        // 2) Settings "Apps" screens: straight back to the home screen.
+        // 2) Settings "Apps" screens: show this app's main screen instead.
         if (pkg != "com.android.settings" || !Blocks.hideSettingsApps(this)) return
         val cls = event.className?.toString()?.lowercase().orEmpty()
         val title = event.text.joinToString(" ").trim().lowercase()
         if (classFragments.any { cls.contains(it) } || title in titles) {
+            openMainScreen()
+        }
+    }
+
+    /** Brings up this app's main screen (never the hidden ones). */
+    private fun openMainScreen() {
+        val main = Intent(this, MainActivity::class.java)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        try {
+            startActivity(main)
+        } catch (e: Exception) {
+            // If the system refuses a direct start, leave Settings first, then retry.
             performGlobalAction(GLOBAL_ACTION_HOME)
+            try { startActivity(main) } catch (_: Exception) { }
         }
     }
 
