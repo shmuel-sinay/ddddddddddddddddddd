@@ -28,6 +28,29 @@ class ActivityListActivity : AppCompatActivity() {
         const val EXTRA_PACKAGE = "extra_package"
     }
 
+    /**
+     * Only screens another app is actually allowed to start: enabled,
+     * exported, and not guarded by a permission we don't hold. Everything
+     * else would just fail with SecurityException, so it is not listed.
+     */
+    private fun canOpen(info: android.content.pm.ActivityInfo): Boolean {
+        if (!info.enabled || !info.exported) return false
+        val perm = info.permission
+        if (perm != null &&
+            checkSelfPermission(perm) != PackageManager.PERMISSION_GRANTED
+        ) return false
+        return true
+    }
+
+    /**
+     * Leaving to another app / home / recents closes this hidden screen too,
+     * so re-entering the app lands on the main screen.
+     */
+    override fun onStop() {
+        super.onStop()
+        if (!isChangingConfigurations) finishAffinity()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_app_list)
@@ -51,13 +74,13 @@ class ActivityListActivity : AppCompatActivity() {
                 ?: emptyList()
         } catch (e: PackageManager.NameNotFoundException) {
             emptyList()
-        }.sortedBy { it.name }
+        }.filter { canOpen(it) }.sortedBy { it.name }
 
         headerCount.text = "${activities.size} מסכים"
 
         if (activities.isEmpty()) {
             val empty = TextView(this).apply {
-                text = "לא נמצאו activities מוצהרים לאפליקציה הזו"
+                text = "לא נמצאו מסכים שניתן לפתוח באפליקציה הזו"
                 setTextColor(resources.getColor(R.color.empty_text, theme))
                 textSize = 15f
                 gravity = android.view.Gravity.CENTER
@@ -77,11 +100,7 @@ class ActivityListActivity : AppCompatActivity() {
             // Short class name for the title, full name (and export state) as the subtitle.
             val shortName = activityInfo.name.removePrefix(packageName)
             title.text = if (shortName.isEmpty()) activityInfo.name else shortName
-            subtitle.text = if (activityInfo.exported) {
-                "${activityInfo.name}  ·  exported"
-            } else {
-                "${activityInfo.name}  ·  לא exported"
-            }
+            subtitle.text = activityInfo.name
             icon.setImageDrawable(
                 try { activityInfo.loadIcon(pm) } catch (e: Exception) { null }
                     ?: try { pm.getApplicationInfo(packageName, 0).loadIcon(pm) } catch (e: Exception) { null }
