@@ -27,6 +27,7 @@
              never shown in the launcher and not reachable from other apps. -->
         <activity android:name=".AppListActivity" android:exported="false" />
         <activity android:name=".ActivityListActivity" android:exported="false" />
+        <activity android:name=".BlocksActivity" android:exported="false" />
 
         <!-- Device owner (MDM). Activated only through adb, see AdminReceiver. -->
         <receiver

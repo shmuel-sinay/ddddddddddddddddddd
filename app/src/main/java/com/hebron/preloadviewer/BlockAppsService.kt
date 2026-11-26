@@ -30,6 +30,7 @@ class BlockAppsService : AccessibilityService() {
         event ?: return
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         if (event.packageName?.toString() != "com.android.settings") return
+        if (!Blocks.hideSettingsApps(this)) return
 
         val cls = event.className?.toString()?.lowercase().orEmpty()
         val title = event.text.joinToString(" ").trim().lowercase()

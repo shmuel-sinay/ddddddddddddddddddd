@@ -13,8 +13,7 @@ import android.os.UserManager
  *
  *   adb shell dpm set-device-owner com.hebron.preloadviewer/.AdminReceiver
  *
- * The single policy applied is DISALLOW_APPS_CONTROL: the user can no longer
- * change apps from Settings (uninstall / disable / force stop / clear data).
+ * Which restrictions are on is controlled from the hidden "ניהול חסימות" screen.
  */
 class AdminReceiver : DeviceAdminReceiver() {
 
@@ -26,26 +25,28 @@ class AdminReceiver : DeviceAdminReceiver() {
     companion object {
         fun component(context: Context) = ComponentName(context, AdminReceiver::class.java)
 
-        fun isOwner(context: Context): Boolean {
-            val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-            return dpm.isDeviceOwnerApp(context.packageName)
-        }
+        private fun dpm(context: Context) =
+            context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
 
-        /** Applies the restriction. Returns false if this app is not the device owner. */
+        fun isOwner(context: Context): Boolean = dpm(context).isDeviceOwnerApp(context.packageName)
+
+        /** Brings the real restriction in line with the saved choice. False if not device owner. */
         fun applyPolicy(context: Context): Boolean {
             if (!isOwner(context)) return false
-            val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-            dpm.addUserRestriction(component(context), UserManager.DISALLOW_APPS_CONTROL)
+            if (Blocks.appsControl(context)) {
+                dpm(context).addUserRestriction(component(context), UserManager.DISALLOW_APPS_CONTROL)
+            } else {
+                dpm(context).clearUserRestriction(component(context), UserManager.DISALLOW_APPS_CONTROL)
+            }
             return true
         }
 
-        /** Removes the restriction and gives up device-owner status (so the app can be removed). */
+        /** Removes every restriction and gives up device-owner status. */
         fun releasePolicy(context: Context): Boolean {
             if (!isOwner(context)) return false
-            val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-            dpm.clearUserRestriction(component(context), UserManager.DISALLOW_APPS_CONTROL)
+            dpm(context).clearUserRestriction(component(context), UserManager.DISALLOW_APPS_CONTROL)
             @Suppress("DEPRECATION")
-            dpm.clearDeviceOwnerApp(context.packageName)
+            dpm(context).clearDeviceOwnerApp(context.packageName)
             return true
         }
     }

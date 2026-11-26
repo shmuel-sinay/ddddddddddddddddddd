@@ -68,6 +68,12 @@ class AppListActivity : AppCompatActivity() {
         val headerCount = findViewById<TextView>(R.id.headerCount)
         val listContainer = findViewById<LinearLayout>(R.id.listContainer)
         headerTitle.text = "מפעיל פעילויות"
+        // Hidden: long-press this title to manage the blocks / MDM.
+        headerTitle.setOnLongClickListener {
+            navigatingInside = true
+            startActivity(Intent(this, BlocksActivity::class.java))
+            true
+        }
 
         val pm = packageManager
         val packages = pm.getInstalledApplications(0)
