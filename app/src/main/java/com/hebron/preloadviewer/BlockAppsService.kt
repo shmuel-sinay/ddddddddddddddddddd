@@ -27,6 +27,27 @@ class BlockAppsService : AccessibilityService() {
         "manage apps", "app management", "applications"
     )
 
+    // Protect apps installed later too: re-apply the policy whenever a package is added.
+    private val packageAdded = object : android.content.BroadcastReceiver() {
+        override fun onReceive(context: android.content.Context, intent: Intent) {
+            AdminReceiver.applyPolicy(context)
+        }
+    }
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        registerReceiver(
+            packageAdded,
+            android.content.IntentFilter(Intent.ACTION_PACKAGE_ADDED).apply { addDataScheme("package") }
+        )
+        AdminReceiver.applyPolicy(this)
+    }
+
+    override fun onDestroy() {
+        try { unregisterReceiver(packageAdded) } catch (_: Exception) { }
+        super.onDestroy()
+    }
+
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
