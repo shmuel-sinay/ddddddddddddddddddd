@@ -108,8 +108,8 @@ class MainActivity : AppCompatActivity() {
             setText(R.string.section_tools)
             setTextColor(resources.getColor(R.color.section_text, theme))
             setTypeface(typeface, Typeface.BOLD)
-            textSize = 15f
-            setPadding((16 * dp).toInt(), ((if (extraTop) 24 else 16) * dp).toInt(), (16 * dp).toInt(), (8 * dp).toInt())
+            textSize = 13f
+            setPadding((16 * dp).toInt(), ((if (extraTop) 14 else 8) * dp).toInt(), (16 * dp).toInt(), (4 * dp).toInt())
         })
 
         val found = try { pm.getApplicationInfo(FILE_MANAGER_PACKAGE, 0) } catch (e: Exception) { null }
@@ -150,12 +150,12 @@ class MainActivity : AppCompatActivity() {
             setText(titleRes)
             setTextColor(resources.getColor(R.color.section_text, theme))
             setTypeface(typeface, Typeface.BOLD)
-            textSize = 15f
+            textSize = 13f
             setPadding(
                 (16 * dp).toInt(),
-                ((if (extraTop) 24 else 16) * dp).toInt(),
+                ((if (extraTop) 14 else 8) * dp).toInt(),
                 (16 * dp).toInt(),
-                (8 * dp).toInt()
+                (4 * dp).toInt()
             )
         }
         container.addView(header)
