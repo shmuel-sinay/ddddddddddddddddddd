@@ -17,7 +17,13 @@ class BlockAppsService : AccessibilityService() {
     private val classFragments = listOf(
         "manageapplications", "installedappdetails", "appinfo", "appandnotification",
         "applicationsettings", "applicationdetails", "appdetails", "runningservices",
-        "allapps", "appmanagement"
+        "allapps", "appmanagement", "uninstall"
+    )
+
+    // Whole phrases only: findAccessibilityNodeInfosByText matches substrings.
+    private val uninstallTexts = listOf(
+        "הסרת התקנה", "הסר את התקנת", "הסרת עדכונים", "הסרת האפליקציה",
+        "uninstall", "uninstall updates"
     )
 
     private val titles = setOf(
@@ -50,8 +56,16 @@ class BlockAppsService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
-        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
         val pkg = event.packageName?.toString() ?: return
+
+        // Content changes are only used to spot an uninstall option inside Settings.
+        if (event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            if (pkg == "com.android.settings" && Blocks.appsControl(this) && showsUninstall()) {
+                openSettingsMain()
+            }
+            return
+        }
+        if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
 
         // 1) Chosen apps (e.g. the alarm clock): show this app's main screen instead.
         if (pkg != packageName && pkg in Blocks.redirectPackages(this)) {
@@ -73,8 +87,20 @@ class BlockAppsService : AccessibilityService() {
         if (pkg != "com.android.settings" || !Blocks.hideSettingsApps(this)) return
         val cls = event.className?.toString()?.lowercase().orEmpty()
         val title = event.text.joinToString(" ").trim().lowercase()
-        if (classFragments.any { cls.contains(it) } || title in titles) {
+        if (classFragments.any { cls.contains(it) } || title in titles ||
+            (Blocks.appsControl(this) && showsUninstall())
+        ) {
             openSettingsMain()
+        }
+    }
+
+    /** True if the Settings screen currently shown offers to uninstall / remove an app. */
+    private fun showsUninstall(): Boolean {
+        val root = rootInActiveWindow ?: return false
+        return try {
+            uninstallTexts.any { root.findAccessibilityNodeInfosByText(it).isNotEmpty() }
+        } finally {
+            root.recycle()
         }
     }
 
