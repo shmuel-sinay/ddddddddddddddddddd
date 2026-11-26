@@ -2,6 +2,7 @@ package com.hebron.preloadviewer
 
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,6 +20,31 @@ class AppListActivity : AppCompatActivity() {
 
     // True while moving to our own sub-screen (so we must stay alive).
     private var navigatingInside = false
+
+    /**
+     * The app's "main screen" even if it has no launcher icon:
+     * 1. the normal launcher activity, else
+     * 2. any activity with action MAIN (the launcher category may have been removed), else
+     * 3. the first activity another app is allowed to start.
+     */
+    private fun findMainIntent(pkg: String): Intent? {
+        packageManager.getLaunchIntentForPackage(pkg)?.let { return it }
+
+        val main = packageManager.queryIntentActivities(
+            Intent(Intent.ACTION_MAIN).setPackage(pkg), 0
+        ).firstOrNull { it.activityInfo.exported && it.activityInfo.enabled }
+        if (main != null) {
+            return Intent(Intent.ACTION_MAIN).setClassName(pkg, main.activityInfo.name)
+        }
+
+        val first = try {
+            packageManager.getPackageInfo(pkg, PackageManager.GET_ACTIVITIES).activities
+                ?.firstOrNull { it.exported && it.enabled && it.permission == null }
+        } catch (e: PackageManager.NameNotFoundException) {
+            null
+        }
+        return first?.let { Intent().setClassName(pkg, it.name) }
+    }
 
     override fun onStart() {
         super.onStart()
@@ -67,7 +93,7 @@ class AppListActivity : AppCompatActivity() {
 
             // Short press: open the app's main screen.
             row.setOnClickListener {
-                val launch = pm.getLaunchIntentForPackage(appInfo.packageName)
+                val launch = findMainIntent(appInfo.packageName)
                 if (launch != null) {
                     launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     try {
@@ -76,7 +102,7 @@ class AppListActivity : AppCompatActivity() {
                         Toast.makeText(this, "שגיאה בהפעלה: ${e.message}", Toast.LENGTH_LONG).show()
                     }
                 } else {
-                    Toast.makeText(this, "לאפליקציה אין מסך ראשי לפתיחה — לחיצה ארוכה להצגת המסכים", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "לא נמצא מסך שניתן לפתוח באפליקציה הזו", Toast.LENGTH_LONG).show()
                 }
             }
             // Long press: list all of the app's openable sub-screens.
