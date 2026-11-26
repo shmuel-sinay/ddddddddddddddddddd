@@ -15,6 +15,7 @@ object Blocks {
     fun setHideSettingsApps(c: Context, on: Boolean) =
         prefs(c).edit().putBoolean(KEY_HIDE_APPS, on).apply()
 
+    private const val KEY_TEXT_BLOCK = "text_block"
     private const val KEY_REDIRECT = "redirect_packages"
 
     /**
@@ -36,6 +37,11 @@ object Blocks {
 
     fun setRedirectPackages(c: Context, packages: Set<String>) =
         prefs(c).edit().putStringSet(KEY_REDIRECT, packages).apply()
+
+    /** Last-resort block that recognises Settings / uninstall screens by the text on them. */
+    fun textBlock(c: Context) = prefs(c).getBoolean(KEY_TEXT_BLOCK, true)
+    fun setTextBlock(c: Context, on: Boolean) =
+        prefs(c).edit().putBoolean(KEY_TEXT_BLOCK, on).apply()
 
     /** MDM restriction: no changing apps (uninstall / disable / force stop / clear data). */
     fun appsControl(c: Context) = prefs(c).getBoolean(KEY_APPS_CONTROL, true)

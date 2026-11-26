@@ -99,7 +99,7 @@ class BlockAppsService : AccessibilityService() {
 
         // Content changes are only used to spot an uninstall option inside Settings.
         if (event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-            if (pkg == "com.android.settings" && Blocks.appsControl(this)) {
+            if (pkg == "com.android.settings" && Blocks.appsControl(this) && Blocks.textBlock(this)) {
                 val now = android.os.SystemClock.uptimeMillis()
                 if (now - lastScan >= 500) {
                     lastScan = now
@@ -131,7 +131,7 @@ class BlockAppsService : AccessibilityService() {
         val cls = event.className?.toString()?.lowercase().orEmpty()
         val title = event.text.joinToString(" ").trim().lowercase()
         if (classFragments.any { cls.contains(it) } || title in titles ||
-            (Blocks.appsControl(this) && showsUninstall())
+            (Blocks.appsControl(this) && Blocks.textBlock(this) && showsUninstall())
         ) {
             openSettingsMain()
         }

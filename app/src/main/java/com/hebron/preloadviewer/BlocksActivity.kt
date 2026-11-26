@@ -79,6 +79,13 @@ class BlocksActivity : AppCompatActivity() {
             }
         })
 
+        root.addView(SwitchCompat(this).apply {
+            text = "חסימה לפי טקסט על המסך (אחרון)"
+            isChecked = Blocks.textBlock(this@BlocksActivity)
+            setPadding(0, 0, 0, pad)
+            setOnCheckedChangeListener { _, on -> Blocks.setTextBlock(this@BlocksActivity, on) }
+        })
+
         root.addView(Button(this).apply {
             text = "אפליקציות שיפתחו את חברון התקנות"
             setOnClickListener { chooseRedirectApps() }
