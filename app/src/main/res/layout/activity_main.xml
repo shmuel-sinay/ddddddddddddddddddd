@@ -11,8 +11,8 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="@color/header_blue"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="8dp">
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="22dp">
 
         <TextView
             android:id="@+id/headerTitle"
@@ -22,14 +22,25 @@
             android:text="@string/header_title"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
-            android:textSize="16sp" />
+            android:textSize="20sp" />
+
+        <ImageView
+            android:id="@+id/refreshButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_refresh"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/refresh"
+            android:clickable="true"
+            android:focusable="true" />
 
         <TextView
             android:id="@+id/headerCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/header_blue_sub"
-            android:textSize="11sp" />
+            android:textSize="13sp" />
     </LinearLayout>
 
     <TextView
@@ -60,10 +71,10 @@
          screen matches pixel-for-pixel, but intentionally inert here: this
          build stays view-only, per the original decision not to install
          anything. Wire installAllButton up only if that decision changes. -->
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/installAllButton"
         android:layout_width="match_parent"
-        android:layout_height="36dp"
+        android:layout_height="44dp"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginTop="4dp"
@@ -72,9 +83,10 @@
         android:textAllCaps="false"
         android:textColor="#FFFFFF"
         android:textStyle="bold"
-        android:textSize="13sp"
+        android:textSize="15sp"
         android:paddingVertical="0dp"
         android:minHeight="0dp"
-        android:background="@drawable/bg_install_all_button" />
+        android:background="@drawable/bg_install_all_button"
+        android:backgroundTint="@null" />
 
 </LinearLayout>

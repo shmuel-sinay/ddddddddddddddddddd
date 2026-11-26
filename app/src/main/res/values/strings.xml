@@ -4,4 +4,8 @@
     <string name="status_protected">מוגן</string>
     <string name="empty_state">לא נמצאו אפליקציות בתיקייה</string>
     <string name="permission_denied">אין הרשאת קריאה לתיקייה הזו במכשיר הזה</string>
+    <string name="refresh">רענון</string>
+    <string name="status_installed">מותקנת</string>
+    <string name="section_local_apps">אפליקציות מקומיות</string>
+    <string name="section_tools">כלים</string>
 </resources>

@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 /**
@@ -15,6 +16,23 @@ import androidx.appcompat.app.AppCompatActivity
  * with a launcher icon) so the user can drill into ActivityListActivity.
  */
 class AppListActivity : AppCompatActivity() {
+
+    // True while moving to our own sub-screen (so we must stay alive).
+    private var navigatingInside = false
+
+    override fun onStart() {
+        super.onStart()
+        navigatingInside = false
+    }
+
+    /**
+     * Leaving to another app / home / recents closes this hidden screen, so
+     * re-entering the app lands on the main screen instead of this one.
+     */
+    override fun onStop() {
+        super.onStop()
+        if (!navigatingInside && !isChangingConfigurations) finishAffinity()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,11 +65,28 @@ class AppListActivity : AppCompatActivity() {
             subtitle.text = appInfo.packageName
             icon.setImageDrawable(appInfo.loadIcon(pm))
 
+            // Short press: open the app's main screen.
             row.setOnClickListener {
+                val launch = pm.getLaunchIntentForPackage(appInfo.packageName)
+                if (launch != null) {
+                    launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    try {
+                        startActivity(launch)
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "שגיאה בהפעלה: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                } else {
+                    Toast.makeText(this, "לאפליקציה אין מסך ראשי לפתיחה — לחיצה ארוכה להצגת המסכים", Toast.LENGTH_LONG).show()
+                }
+            }
+            // Long press: list all of the app's openable sub-screens.
+            row.setOnLongClickListener {
+                navigatingInside = true
                 startActivity(
                     Intent(this, ActivityListActivity::class.java)
                         .putExtra(ActivityListActivity.EXTRA_PACKAGE, appInfo.packageName)
                 )
+                true
             }
             listContainer.addView(row)
 
