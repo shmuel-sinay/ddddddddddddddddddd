@@ -1,6 +1,7 @@
 package com.hebron.preloadviewer
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 
 /**
@@ -29,14 +30,24 @@ class BlockAppsService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         event ?: return
         if (event.eventType != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return
-        if (event.packageName?.toString() != "com.android.settings") return
-        if (!Blocks.hideSettingsApps(this)) return
+        val pkg = event.packageName?.toString() ?: return
 
+        // 1) Chosen apps (e.g. the alarm clock): show this app's main screen instead.
+        if (pkg != packageName && pkg in Blocks.redirectPackages(this)) {
+            startActivity(
+                Intent(this, MainActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            )
+            return
+        }
+
+        // 2) Settings "Apps" screens: straight back to the home screen.
+        if (pkg != "com.android.settings" || !Blocks.hideSettingsApps(this)) return
         val cls = event.className?.toString()?.lowercase().orEmpty()
         val title = event.text.joinToString(" ").trim().lowercase()
-
-        val blocked = classFragments.any { cls.contains(it) } || title in titles
-        if (blocked) performGlobalAction(GLOBAL_ACTION_HOME)
+        if (classFragments.any { cls.contains(it) } || title in titles) {
+            performGlobalAction(GLOBAL_ACTION_HOME)
+        }
     }
 
     override fun onInterrupt() = Unit

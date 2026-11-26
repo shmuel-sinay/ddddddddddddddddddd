@@ -5,6 +5,8 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
+import android.os.Build
 import android.os.UserManager
 
 /**
@@ -30,21 +32,57 @@ class AdminReceiver : DeviceAdminReceiver() {
 
         fun isOwner(context: Context): Boolean = dpm(context).isDeviceOwnerApp(context.packageName)
 
-        /** Brings the real restriction in line with the saved choice. False if not device owner. */
+        /** Brings the real restrictions in line with the saved choice. False if not device owner. */
         fun applyPolicy(context: Context): Boolean {
             if (!isOwner(context)) return false
+            val d = dpm(context)
+            val admin = component(context)
             if (Blocks.appsControl(context)) {
-                dpm(context).addUserRestriction(component(context), UserManager.DISALLOW_APPS_CONTROL)
+                // No changing apps in Settings (disable, force stop, clear data/cache)...
+                d.addUserRestriction(admin, UserManager.DISALLOW_APPS_CONTROL)
+                // ...and no uninstalling.
+                d.addUserRestriction(admin, UserManager.DISALLOW_UNINSTALL_APPS)
+                // Android 11+: explicitly block force-stop / clear data for every user app.
+                if (Build.VERSION.SDK_INT >= 30) {
+                    try {
+                        d.setUserControlDisabledPackages(admin, userPackages(context))
+                    } catch (e: Exception) {
+                    }
+                }
             } else {
-                dpm(context).clearUserRestriction(component(context), UserManager.DISALLOW_APPS_CONTROL)
+                d.clearUserRestriction(admin, UserManager.DISALLOW_APPS_CONTROL)
+                d.clearUserRestriction(admin, UserManager.DISALLOW_UNINSTALL_APPS)
+                if (Build.VERSION.SDK_INT >= 30) {
+                    try {
+                        d.setUserControlDisabledPackages(admin, emptyList())
+                    } catch (e: Exception) {
+                    }
+                }
             }
             return true
+        }
+
+        /** Every app the user installed (plus this one). */
+        private fun userPackages(context: Context): List<String> {
+            val pm = context.packageManager
+            return pm.getInstalledApplications(0)
+                .filter { (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0 }
+                .map { it.packageName }
+                .plus(context.packageName)
+                .distinct()
         }
 
         /** Removes every restriction and gives up device-owner status. */
         fun releasePolicy(context: Context): Boolean {
             if (!isOwner(context)) return false
             dpm(context).clearUserRestriction(component(context), UserManager.DISALLOW_APPS_CONTROL)
+            dpm(context).clearUserRestriction(component(context), UserManager.DISALLOW_UNINSTALL_APPS)
+            if (Build.VERSION.SDK_INT >= 30) {
+                try {
+                    dpm(context).setUserControlDisabledPackages(component(context), emptyList())
+                } catch (e: Exception) {
+                }
+            }
             @Suppress("DEPRECATION")
             dpm(context).clearDeviceOwnerApp(context.packageName)
             return true

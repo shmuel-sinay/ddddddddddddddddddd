@@ -61,6 +61,11 @@ class BlocksActivity : AppCompatActivity() {
         })
 
         root.addView(Button(this).apply {
+            text = "אפליקציות שיפתחו את חברון התקנות"
+            setOnClickListener { chooseRedirectApps() }
+        })
+
+        root.addView(Button(this).apply {
             text = "בטל MDM לגמרי"
             setOnClickListener {
                 AlertDialog.Builder(this@BlocksActivity)
@@ -79,6 +84,34 @@ class BlocksActivity : AppCompatActivity() {
         })
 
         setContentView(root)
+    }
+
+    /** Pick the apps that, when opened, bring up the main screen of this app instead. */
+    private fun chooseRedirectApps() {
+        val pm = packageManager
+        val launcher = android.content.Intent(android.content.Intent.ACTION_MAIN)
+            .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
+        val apps = pm.queryIntentActivities(launcher, 0)
+            .map { it.activityInfo.packageName to it.loadLabel(pm).toString() }
+            .filter { it.first != packageName }
+            .distinctBy { it.first }
+            .sortedBy { it.second.lowercase() }
+        val selected = Blocks.redirectPackages(this)
+        val checked = BooleanArray(apps.size) { apps[it].first in selected }
+
+        AlertDialog.Builder(this)
+            .setTitle("אפליקציות שיפתחו את חברון התקנות")
+            .setMultiChoiceItems(apps.map { it.second }.toTypedArray(), checked) { _, i, on ->
+                checked[i] = on
+            }
+            .setPositiveButton("שמור") { _, _ ->
+                Blocks.setRedirectPackages(
+                    this,
+                    apps.indices.filter { checked[it] }.map { apps[it].first }.toSet()
+                )
+            }
+            .setNegativeButton("בטל", null)
+            .show()
     }
 
     override fun onResume() {
