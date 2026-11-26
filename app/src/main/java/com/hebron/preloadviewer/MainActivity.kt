@@ -92,6 +92,50 @@ class MainActivity : AppCompatActivity() {
 
         addSection(listContainer, R.string.section_local_apps, apps, pm, extraTop = false)
         addSection(listContainer, R.string.section_tools, tools, pm, extraTop = apps.isNotEmpty())
+        // The file manager is a system app, so it is usually not among the
+        // APKs — always show it in its own section anyway.
+        if (tools.isEmpty()) addSystemFileManager(listContainer, pm, extraTop = apps.isNotEmpty())
+    }
+
+    private fun addSystemFileManager(container: LinearLayout, pm: PackageManager, extraTop: Boolean) {
+        val dp = resources.displayMetrics.density
+        container.addView(TextView(this).apply {
+            setText(R.string.section_tools)
+            setTextColor(resources.getColor(R.color.section_text, theme))
+            setTypeface(typeface, Typeface.BOLD)
+            textSize = 15f
+            setPadding((16 * dp).toInt(), ((if (extraTop) 24 else 16) * dp).toInt(), (16 * dp).toInt(), (8 * dp).toInt())
+        })
+
+        // Look for an installed file manager (system or not).
+        val found = pm.getInstalledApplications(0).firstOrNull {
+            val pkg = it.packageName.lowercase()
+            val label = it.loadLabel(pm).toString().lowercase()
+            pkg.contains("filemanager") || pkg.contains("fileexplorer") ||
+                pkg.contains("documentsui") || pkg.endsWith(".files") ||
+                label.contains("קבצים") || label.contains("file manager")
+        }
+
+        val row = LayoutInflater.from(this).inflate(R.layout.item_app_row, container, false)
+        row.findViewById<TextView>(R.id.appName).text = found?.loadLabel(pm) ?: "מנהל הקבצים"
+        row.findViewById<TextView>(R.id.appInstalled).visibility = View.VISIBLE
+        if (found != null) {
+            row.findViewById<ImageView>(R.id.appIcon).setImageDrawable(found.loadIcon(pm))
+            val ver = try { pm.getPackageInfo(found.packageName, 0).versionName } catch (e: Exception) { null }
+            row.findViewById<TextView>(R.id.appVersion).text = if (ver.isNullOrEmpty()) "" else "v$ver"
+        }
+        row.setOnClickListener {
+            val launch = found?.let { pm.getLaunchIntentForPackage(it.packageName) }
+                ?: pm.getLaunchIntentForPackage("com.android.documentsui")
+            if (launch != null) {
+                try { startActivity(launch) } catch (e: Exception) {
+                    Toast.makeText(this, "שגיאה בהפעלה: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            } else {
+                Toast.makeText(this, "מנהל הקבצים לא נמצא במכשיר", Toast.LENGTH_SHORT).show()
+            }
+        }
+        container.addView(row)
     }
 
     private fun addSection(
