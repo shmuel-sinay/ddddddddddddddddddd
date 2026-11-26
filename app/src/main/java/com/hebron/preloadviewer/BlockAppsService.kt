@@ -38,12 +38,25 @@ class BlockAppsService : AccessibilityService() {
             return
         }
 
-        // 2) Settings "Apps" screens: show this app's main screen instead.
+        // 2) Settings "Apps" screens: show the main screen of Settings instead.
         if (pkg != "com.android.settings" || !Blocks.hideSettingsApps(this)) return
         val cls = event.className?.toString()?.lowercase().orEmpty()
         val title = event.text.joinToString(" ").trim().lowercase()
         if (classFragments.any { cls.contains(it) } || title in titles) {
-            openMainScreen()
+            openSettingsMain()
+        }
+    }
+
+    /** Resets Settings to its own main screen, dropping the Apps screens it was showing. */
+    private fun openSettingsMain() {
+        val settings = Intent(android.provider.Settings.ACTION_SETTINGS)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        try {
+            startActivity(settings)
+        } catch (e: Exception) {
+            // If the system refuses a direct start, leave Settings first, then retry.
+            performGlobalAction(GLOBAL_ACTION_HOME)
+            try { startActivity(settings) } catch (_: Exception) { }
         }
     }
 
