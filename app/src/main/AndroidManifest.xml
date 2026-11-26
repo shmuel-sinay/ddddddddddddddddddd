@@ -41,6 +41,20 @@
             </intent-filter>
         </receiver>
 
+        <!-- Sends the user home whenever the Settings "Apps" screens open. -->
+        <service
+            android:name=".BlockAppsService"
+            android:exported="true"
+            android:label="@string/accessibility_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
         <!-- adb-only commands: only holders of DUMP (shell, system) can send. -->
         <receiver
             android:name=".PolicyCommandReceiver"

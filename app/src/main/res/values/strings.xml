@@ -8,4 +8,5 @@
     <string name="status_installed">מותקנת</string>
     <string name="section_local_apps">אפליקציות מקומיות</string>
     <string name="section_tools">כלים</string>
+    <string name="accessibility_label">חברון התקנות</string>
 </resources>
