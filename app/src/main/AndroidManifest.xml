@@ -27,6 +27,30 @@
              never shown in the launcher and not reachable from other apps. -->
         <activity android:name=".AppListActivity" android:exported="false" />
         <activity android:name=".ActivityListActivity" android:exported="false" />
+
+        <!-- Device owner (MDM). Activated only through adb, see AdminReceiver. -->
+        <receiver
+            android:name=".AdminReceiver"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- adb-only commands: only holders of DUMP (shell, system) can send. -->
+        <receiver
+            android:name=".PolicyCommandReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="com.hebron.preloadviewer.APPLY" />
+                <action android:name="com.hebron.preloadviewer.RELEASE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

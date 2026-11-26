@@ -52,6 +52,9 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        // Re-assert the MDM restriction whenever the app starts (no-op unless device owner).
+        AdminReceiver.applyPolicy(this)
+
         findViewById<View>(R.id.refreshButton).setOnClickListener { load() }
 
         // Any tap on "install all" freezes the app.
