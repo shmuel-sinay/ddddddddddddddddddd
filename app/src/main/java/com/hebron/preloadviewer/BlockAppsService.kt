@@ -59,6 +59,16 @@ class BlockAppsService : AccessibilityService() {
             return
         }
 
+        // Backup for devices that don't enforce the uninstall restriction themselves:
+        // cancel the system "uninstall this app?" dialog as soon as it appears.
+        if (Blocks.appsControl(this) && pkg.contains("packageinstaller", ignoreCase = true)) {
+            val installerCls = event.className?.toString()?.lowercase().orEmpty()
+            if (installerCls.contains("uninstall")) {
+                performGlobalAction(GLOBAL_ACTION_BACK)
+                return
+            }
+        }
+
         // 2) Settings "Apps" screens: show the main screen of Settings instead.
         if (pkg != "com.android.settings" || !Blocks.hideSettingsApps(this)) return
         val cls = event.className?.toString()?.lowercase().orEmpty()
