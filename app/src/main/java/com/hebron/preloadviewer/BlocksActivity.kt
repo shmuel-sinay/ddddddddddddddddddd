@@ -18,6 +18,25 @@ class BlocksActivity : AppCompatActivity() {
 
     private lateinit var status: TextView
 
+    // True while the system file picker is open, so leaving this screen doesn't close it.
+    private var picking = false
+
+    // Lets the user pick a folder and saves the bundled adb script there.
+    private val saveScript = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/octet-stream")
+    ) { uri ->
+        picking = false
+        if (uri == null) return@registerForActivityResult
+        try {
+            assets.open("setup-mdm.bat").use { input ->
+                contentResolver.openOutputStream(uri)?.use { out -> input.copyTo(out) }
+            }
+            Toast.makeText(this, "הסקריפט נשמר", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "השמירה נכשלה: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         title = "ניהול חסימות"
@@ -63,6 +82,14 @@ class BlocksActivity : AppCompatActivity() {
         root.addView(Button(this).apply {
             text = "אפליקציות שיפתחו את חברון התקנות"
             setOnClickListener { chooseRedirectApps() }
+        })
+
+        root.addView(Button(this).apply {
+            text = "שמור סקריפט הפעלה (ADB) לתיקייה"
+            setOnClickListener {
+                picking = true
+                saveScript.launch("setup-mdm.bat")
+            }
         })
 
         root.addView(Button(this).apply {
@@ -130,6 +157,6 @@ class BlocksActivity : AppCompatActivity() {
     // Leaving this screen closes the hidden chain, like the other hidden screens.
     override fun onStop() {
         super.onStop()
-        if (!isChangingConfigurations) finishAffinity()
+        if (!isChangingConfigurations && !picking) finishAffinity()
     }
 }
